@@ -421,7 +421,7 @@ jobs:
             --publish never
 
       - name: Validate SignPath configuration (Windows)
-        if: matrix.os_type == 'windows'
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         env:
           SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -445,7 +445,7 @@ jobs:
           fi
 
       - name: Stage unsigned Windows installer for SignPath
-        if: matrix.os_type == 'windows'
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         run: |
           set -euo pipefail
@@ -461,7 +461,7 @@ jobs:
           cp "${installers[0]}" "$RUNNER_TEMP/signpath-unsigned/"
 
       - name: Upload unsigned Windows installer for SignPath
-        if: matrix.os_type == 'windows'
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != ''
         id: upload-unsigned-windows-installer
         uses: actions/upload-artifact@v4
         with:
@@ -471,7 +471,7 @@ jobs:
           retention-days: 1
 
       - name: Submit Windows signing request to SignPath
-        if: matrix.os_type == 'windows' && env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG == ''
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != '' && env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG == ''
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -483,7 +483,7 @@ jobs:
           output-artifact-directory: ${{ runner.temp }}/signpath-signed
 
       - name: Submit Windows signing request to SignPath (artifact configuration)
-        if: matrix.os_type == 'windows' && env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG != ''
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != '' && env.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG != ''
         uses: signpath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -496,7 +496,7 @@ jobs:
           output-artifact-directory: ${{ runner.temp }}/signpath-signed
 
       - name: Apply signed Windows installer
-        if: matrix.os_type == 'windows'
+        if: matrix.os_type == 'windows' && env.SIGNPATH_API_TOKEN != ''
         shell: bash
         run: node scripts/release/apply-signpath-windows-artifact.mjs "$RUNNER_TEMP/signpath-signed" apps/desktop/dist-electron
 
